@@ -1,0 +1,393 @@
+---
+title: "hw01"
+author: "Shi Fan Jin"
+date: "2/17/2018"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(corrplot)
+```
+
+####2) Data Import (20 pts)
+```{r}
+imports85 <- read.csv('imports-85.data', sep = ',')
+imports85 <- read.csv('imports-85.data', header = FALSE)
+imports85_matrix <- as.matrix(read.csv('imports-85.data', sep = ','))
+str(imports85_matrix)
+
+col_names <- c(
+  'symboling',
+  'normalized_losses',
+  'make',
+  'fuel_type',
+  'aspiration',
+  'num_of_doors',
+  'body_style',
+  'drive_wheels',
+  'engine_location',
+  'wheel_base',
+  'length',
+  'width',
+  'height',
+  'curb_weight',
+  'engine_type',
+  'num_of_cylinders',
+  'engine_size',
+  'fuel_system',
+  'bore',
+  'stroke',
+  'compression_ratio',
+  'horsepower',
+  'peak_rpm',
+  'city_mpg',
+  'highway_mpg',
+  'price'
+)
+
+col_types <- c(
+  'real',
+  'real',
+  'character',
+  'character',
+  'character',
+  'character',
+  'character',
+  'character',
+  'character',
+  'real',
+  'real',
+  'real',
+  'real',
+  'integer',
+  'character',
+  'character',
+  'integer',
+  'character',
+  'real',
+  'real',
+  'real',
+  'integer',
+  'integer',
+  'integer',
+  'integer',
+  'integer'
+)
+
+# Before giving col.names and colClasses:
+str(imports85) # ? becomes col type 'Factor'
+object.size(imports85)  # 43344 bytes
+
+imports85 <- read.csv('imports-85.data', sep = ',', col.names = col_names, colClasses = col_types, stringsAsFactors = FALSE, na = '?', header = FALSE)
+
+str(imports85)
+object.size(imports85) # 43136 bytes
+
+imports85_csv <- read_csv('imports-85.data', na = '?', col_names = col_names, 
+                          col_types = cols(
+                            symboling = col_double(),
+                            normalized_losses = col_double(),
+                            make = col_character(),
+                            fuel_type = col_character(),
+                            aspiration = col_character(),
+                            num_of_doors = col_character(),
+                            body_style = col_character(),
+                            drive_wheels = col_character(),
+                            engine_location = col_character(),
+                            wheel_base = col_double(),
+                            length = col_double(),
+                            width = col_double(),
+                            height = col_double(),
+                            curb_weight = col_integer(),
+                            engine_type = col_character(),
+                            num_of_cylinders = col_character(),
+                            engine_size = col_integer(),
+                            fuel_system = col_character(),
+                            bore = col_double(),
+                            stroke = col_double(),
+                            compression_ratio = col_double(),
+                            horsepower = col_integer(),
+                            peak_rpm = col_integer(),
+                            city_mpg = col_integer(),
+                            highway_mpg = col_integer(),
+                            price = col_integer()
+                          )
+                        )
+
+str(imports85_csv)
+
+
+```
+
+####3) Technical Questions about importing data (10 pts)
+*Answer the following questions (using your own words). You do NOT need to include any commands.*\
+  **a. If you don’t provide a vector of column names, what happens to the column names of the imported data when you simply invoke read.csv('imports-85.data')?**\
+  It would take the first row automatically to be the column names.\
+  
+  **b. If you don’t provide a vector of column names, what happens to the column names of the imported data when you invoke read.csv('imports-85.data', header = FALSE)?**\
+  Instead of taking the first row to be the column names, it would label them using V1 to Vn, in this case, it would be from V1 to V26.\
+
+  **c. When using the reading table functions, if you don’t specify how missing values are codified, what happens to the data type of those columns that contain '?', e.g. price or num_of_doors?**\
+  The data type will become 'Factor'.\
+
+  **d. Say you import imports-85.data in two different ways. In the first option you import the data without specifying the data type of each column. In the second option you do specify the data types. You may wonder whether both options return a data frame of the same memory size. You can actually use the function object.size() that provides an estimate of the memory that is being used to store an R object. Why is the data frame imported in the second option bigger (in terms of bytes) than the data frame imported in the first option?**\
+  Because if you didn't specify it, some of the type will become 'Factor' automatically. And the size of a 'Factor' is smaller than a charactor.
+  
+  **e. Say the object dat is the data frame produced when importing imports-85.data. What happens to the data values if you convert dat as an R matrix?**\
+  It makes all of the data values into the same type. In this case. It made them into 'character'.
+
+
+
+
+####4) Practice base plotting (10 pts)
+Create the following plots—without using functions from the package "ggplot2"—and provide a concise description for each of them: \
+  • histogram of price with colored bars.\
+  • boxplot of horsepower in horizontal orientation.\
+  • barplot of the frequencies of body_style, arranged in decreasing order.\
+  • stars() plot of vehicles with turbo aspiration, using only variables wheel-base,
+length, width, height, and price.\
+
+
+######histogram of price with colored bars:
+We can see from the histogram that most of the price is around 10000.\
+```{r}
+hist(imports85$price, breaks = 100, col = rgb(0,0,1,.3), xlab="Price", main = "The Histogram of price with colored bars")
+```
+
+
+######boxplot of horsepower in horizontal orientation:
+In the boxplot, we can see that the median is around 95, and most of the data is concentrated in the range of 70 to 120.\
+```{r}
+boxplot(imports85$horsepower, main = "Boxplot of Horsepower in Horizontal Orientation", xlab = "Horsepower", horizontal = TRUE, na.action = NULL)
+```
+    
+    
+    
+######barplot of the frequencies of body_style, arranged in decreasing order:
+We can see that body style that has the highest frequency is hardtop, and the lowest is convertiable.\
+```{r}
+body_style_vect <- imports85$body_style
+table_body <- sort(table(imports85$body_style), decreasing = TRUE) # the frequencies of each body_style
+barplot(table_body, main = "Barplot of the frequencies of body_style (decreasing order)", beside = TRUE, xlab = "Body Style", ylab = "frequencies", names.arg = c("hardtop", "wagon", "sedan", "hatchback", "convertible"), horiz = FALSE, ylim = c(0, 100))
+```
+    
+    
+######stars() plot of vehicles with turbo aspiration, using only variables wheel-base, length, width, height, and price:
+In my observation, the stars plot gives us an idea of how the selected car are differ from each other by using variables wheel-base, length, width, height, and price.\
+```{r}
+im85_turbo <- subset(imports85, aspiration == 'turbo', select = c('wheel_base', 'length', 'width', 'height', 'price'))
+stars(im85_turbo, main = "stars() plot of vehicles with turbo aspiration")
+```
+
+  
+####5) Summaries (10 pts)
+a) What is the mean price of fuel_type gas cars? And what is the mean price of
+fuel_type diesel cars? (removing missing values)\
+```{r}
+# 1st way (by subset())
+gas_cars <- subset(imports85, fuel_type == 'gas', select = 'price')
+gas_lou <- imports85[imports85$fuel_type == 'gas', ]$price
+mean(gas_cars$price, na.rm = TRUE )
+mean(gas_lou, na.rm = TRUE)
+
+
+# 2nd way (by which())
+# fuel_type gas cars
+mean(imports85[which(imports85$fuel_type == 'gas'), ]$price, na.rm = TRUE)
+
+
+# fuel_type diesel cars
+mean(imports85[which(imports85$fuel_type == 'diesel'), ]$price, na.rm = TRUE)
+
+```
+
+
+b) What is the make of the car with twelve num_of_cylinders?\
+```{r}
+imports85[which(imports85$num_of_cylinders == 'twelve'), ]$make
+
+```
+
+
+c) What is the make that has the most diesel cars?\
+```{r}
+# with sorting in decreasing order
+head(sort(table(imports85[which(imports85$fuel_type == 'diesel'), ]$make), decreasing = TRUE),1)
+
+```
+
+
+d. What is the price of the car with the largest amount of horsepower?\
+```{r}
+max(imports85$horsepower, na.rm = TRUE)
+imports85[which.max(imports85$horsepower), ]
+imports85[which.max(imports85$horsepower), ]$price
+
+
+```
+
+
+e. What is the bottom 10th percentile of city_mpg?\
+```{r}
+city <- imports85$city_mpg
+#hist(city)
+quantile(city, probs = 0.10)
+```
+
+
+f. What is the top 10th percentile of highway_mpg?\
+```{r}
+#hist(imports85$highway_mpg)
+quantile(imports85$highway_mpg, probs = 0.9)
+```
+
+
+g. What is the median price of those cars in the bottom 10th percentile of city_mpg?\
+```{r}
+bottom_10_price <- imports85[which(imports85$city_mpg <= quantile(imports85$city_mpg, probs = 0.1)), ]$price
+median(bottom_10_price, na.rm = TRUE)
+```
+
+
+####6) Technical Questions about data frames (10 pts)
+a. What happens when you use the dollar $ operator on a data frame, attempting to use the name of a column that does not exist? For example: dat$xyz where there is no column named xyz.\
+  It will return NULL.
+
+
+b. Which of the following commands fails to return the vector mpg which is a column in the built-in data rfame mtcars:
+  1. mtcars$mpg
+  2. mtcars[ ,1]
+  3. mtcars[[1]]
+  4. mtcars[ ,mpg] 
+  5. mtcars[["mpg"]] 
+  6. mtcars$"mpg"
+  7. mtcars[ ,"mpg"]
+\
+ 4
+
+```{r}
+imports85$symboling
+imports85[, 1]
+imports85[[1]]
+imports85[["symboling"]]
+imports85$"symboling"
+imports85[, "symboling"]
+```
+
+
+
+c. Based on your answer for part (b), what is the reason that makes such command to fail?\
+  For mtcars[ ,mpg], there is no such column: mpg exits, we have to state it in "mpg" form because that is the correct column name: "mpg".\
+
+
+d. Can you include an R list as a “column” of a data frame? YES or NO, and why.\
+  YES. Because a data frame is a list of vectors. And in this case, a list is a type of vector. So we can include a list as a column of a data frame.\
+  
+  
+e. What happens when you apply as.list() to a data frame? e.g. as.list(mtcars)\
+  as.list() will turn the argument into a list. So if you apply that to a data frame, it will become a list.
+
+
+f. Consider the command: abc <- as.list(mtcars). What function(s) can you use to
+convert the object abc into a data frame?\
+  You can use the command data.frame() to turn abc into a data frame.
+
+```{r}
+list <- as.list(imports85)
+back <- data.frame(list)
+```
+
+    
+####7) Correlations of quantitative variables (10 pts)
+Except for symboling and normalized_losses, use the rest of the quantitative variables (both integer and real) to compute a matrix of correlations between such variables. See how to use the function na.omit() to create a new data frame with the quantitative variables, that does not contain missing values. Call this data frame qdat.
+
+```{r}
+pre_qdat <- subset(imports85, select = c('wheel_base',
+  'length',
+  'width',
+  'height',
+  'curb_weight',
+  'engine_size',
+  'bore',
+  'stroke',
+  'compression_ratio',
+  'horsepower',
+  'peak_rpm',
+  'city_mpg',
+  'highway_mpg',
+  'price'
+    )
+  )
+
+qdat <- na.omit(pre_qdat)
+
+M <- round(cor(qdat), 2)
+M # the matrix of correlations
+```
+
+Based on the matrix of correlations between the quantitative variables, plot two correlograms, and comment on the patterns and values that you observe.
+```{r}
+corrplot(M, method = "circle")
+corrplot(M, method = "pie")
+```
+
+
+####8) Principal Components Analysis (20 pts)
+######8.1) Run PCA (10 pts)
+• Use prcomp() to perform a principal components analysis on qdat; use the argument scale. = TRUE to carry out PCA on standardized data.
+• Examine the eigenvalues and determine the proportion of variation that is “captured” by the first three components.
+
+```{r}
+pca_prcomp <- prcomp(qdat, scale. = TRUE)
+names(pca_prcomp)
+eigenvalues <- pca_prcomp$sdev ^ 2
+eigenvalues
+barplot(eigenvalues, main = "Barplot for eigenvalues", names.arg = c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10", "PC11", "PC12", "PC13", "PC14"))
+cumulative.percentage = cumsum(eigenvalues) / sum(eigenvalues)
+percentage = eigenvalues / sum(eigenvalues)
+
+eigen_percentage_table <- cbind(eigenvalues, percentage, cumulative.percentage)
+eigen_percentage_table[1:3,]
+
+```
+
+
+######8.2) PCA plot of vehicles, and PCA plot of variables (10 pts)
+• Use the first two components to graph a scatterplot of the vehicles (do not use "ggplot2" functions).
+• Use the first two loadings (i.e. eigenvectors) to graph the variables.
+• Optionally, you can call biplot() of the "prcomop" object to get a simultaneous plot of both the vehicles and the variables.
+```{r}
+
+loading <- pca_prcomp$rotation
+comp_1 <- as.matrix(qdat) %*% as.data.frame(loading)$PC1
+comp_2 <- as.matrix(qdat) %*% as.data.frame(loading)$PC2
+plot(comp_1, comp_2)
+
+
+load_1 <- as.data.frame(loading)$PC1
+load_2 <- as.data.frame(loading)$PC2
+plot(load_1, load_2)
+
+
+biplot(pca_prcomp, scale = 0)
+```
+
+
+• Based on the previous plots, provide a concise description of the patterns that you observe.\
+In my observation, there is a positive linear relationship between the first 2 components. On the other hand, the 2 loadings doesn't have a relationship as strong as the previous one. 
+
+
+
+
+
+
+
+
+    
+    
+    
+    
+    
+  
