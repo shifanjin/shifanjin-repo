@@ -1,0 +1,115 @@
+---
+title: "Hw02"
+author: "Shi Fan Jin"
+date: "3/4/2018"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.path = '../images/')
+```
+# Please do not use code chunk options such as: echo = FALSE, eval = FALSE, results = 'hide'. All chunks must be visible and evaluated.
+
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+shots_data <- read.csv(file = "../data/shots-data.csv", stringsAsFactors = FALSE)
+```
+
+#####5.1) Total Shots by Player (10 pts)
+```{r}
+
+total_shots <- arrange(
+  summarise(
+    group_by(shots_data, name),
+    total = n()
+  ),
+  desc(total)
+)
+
+total_shots
+
+
+```
+
+#####5.2) Effective Shooting Percentage (10 pts)
+```{r}
+
+# Effective Shooting % by Player
+shots_data %>% 
+  group_by(name) %>%
+  summarise(
+    total = n(),
+    made = sum(shot_made_flag == "made shot"),
+    perc_made = made/total) %>%
+  arrange(desc(perc_made))
+
+
+# 2PT Effective Shooting % by Player
+shots_data %>%
+  group_by(name) %>%
+  summarise( 
+    total = n(),
+    made = sum(shot_made_flag == "made shot" & shot_type == "2PT Field Goal"),
+    perc_made = made/total) %>%
+  arrange(desc(perc_made))
+  
+
+# 3PT Effective Shooting % by Player
+
+shots_data %>%
+  group_by(name) %>%
+  summarise( 
+    total = n(),
+    made = sum(shot_made_flag == "made shot" & shot_type == "3PT Field Goal"),
+    perc_made = made/total) %>%
+  arrange(desc(perc_made))
+
+
+```
+
+#####6.1) dplyr table (10 pts)
+```{r}
+shot_distance <- shots_data %>%
+  group_by(shot_distance) %>%
+  summarise(
+    total = n(),
+    made = sum(shot_made_flag == "made shot"),
+    made_shot_prop = made/total) %>%
+  select(c(shot_distance, made_shot_prop))
+
+shot_distance
+```
+
+#####6.2) ggplot (10 pts)
+```{r}
+ggplot(data = shot_distance, aes(x = shot_distance, y = made_shot_prop)) +
+  geom_point() 
+
+```
+**We can see that for those shot_distance below 30 has a higher proportion, whereas for those shot from a longer distance, the chance it got in is very low which is around 0 in the graph. So, from my point of view, we can confirm that the shorter the distance, the more effective the shots. As for the distance of having a percentage (of making a shot) of 50% or more is will be the ones around 1 to 3, and also for 51(which in this case is a extreme value for me).**
+
+#####7) Total number of shots by minute of occurrence (10 pts)
+```{r}
+shots_minute_occurrence <- shots_data %>%
+  group_by(name, minute) %>%
+  summarise(
+    total = n())
+ 
+
+ggplot(dat = shots_minute_occurrence, aes(x = minute, y = total)) +
+  geom_point(col = "blue") +
+  facet_wrap( ~ name) +
+  theme_minimal() +
+  geom_path(aes(x=minute,y=total),linejoin="round",lineend="round",col="blue", alpha = 0.3) +
+  scale_x_continuous(breaks=c(1,12,24,36,48)) +
+  geom_rect(xmin = 0, xmax = 12, ymin = 0, ymax = 60, fill = "grey80", alpha = 0.01) +
+  geom_rect(xmin = 24, xmax = 36, ymin = 0, ymax = 60, fill = "grey80", alpha = 0.01) +
+  ggtitle("Total number of shots (by minute of occurrence)") +
+  ylab("total number of shots")
+
+```
+
