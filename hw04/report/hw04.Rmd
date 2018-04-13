@@ -1,0 +1,148 @@
+---
+title: "hw04"
+author: "Shi Fan Jin"
+date: "4/9/2018"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.path='../images/')
+```
+
+```{r}
+library(stringr)
+library(dplyr)
+library(ggplot2)
+source(file = '../code/archive-functions.R')
+```
+
+###1.4) Archive of "stringr"
+```{r}
+raw_data <- read_archive('stringr')
+clean_data <- clean_archive(raw_data)
+plot_archive(clean_data)
+#Export the table as a CSV file "stringr-archive.csv" to the data/ folder.
+write.csv(clean_data, file = '~/Desktop/shifanjin-repo/hw04/data/stringr-archive.csv')
+
+```
+
+###1.5) Archives of "dplyr", "ggplot2", "XML", and "knitr"
+```{r}
+raw_data_dplyr <- read_archive("dplyr")
+clean_data_dplyr <- clean_archive(raw_data_dplyr)
+#Export the table as a CSV file "stringr-archive.csv" to the data/ folder.
+write.csv(clean_data_dplyr, file = '~/Desktop/shifanjin-repo/hw04/data/dplyr-archive.csv')
+```
+
+```{r}
+raw_data_ggplot2 <- read_archive("ggplot2")
+clean_data_ggplot2 <- clean_archive(raw_data_ggplot2)
+write.csv(clean_data_ggplot2, file = '~/Desktop/shifanjin-repo/hw04/data/ggplot2-archive.csv')
+```
+
+```{r}
+raw_data_xml <- read_archive("XML")
+clean_data_xml <- clean_archive(raw_data_xml)
+write.csv(clean_data_xml, file = '~/Desktop/shifanjin-repo/hw04/data/xml-archive.csv')
+```
+
+```{r}
+raw_data_knitr <- read_archive("knitr")
+clean_data_knitr <- clean_archive(raw_data_knitr)
+write.csv(clean_data_knitr, file = '~/Desktop/shifanjin-repo/hw04/data/knitr-archive.csv')
+```
+
+####In your Rmd file, combine (or merge) all the data tables in one single data frame and use "ggplot2" to create two step line charts:
+
+```{r}
+all_tbl <- rbind(clean_data_dplyr, clean_data_ggplot2, clean_data_knitr, clean_data_xml)
+
+
+ggplot(data = all_tbl) + 
+geom_step(aes(x = date, y = size, color = name), size= 1) +
+ylab('size(Kilobytes)') + xlab('date')
+    
+ggplot(data = all_tbl) + 
+geom_step(aes(x = date, y = size, color = name), size= 1) +
+facet_wrap(~ name,scales='free') +
+ylab('size(Kilobytes)') + xlab('date')
+```
+##2) Regex Functions
+```{r}
+source(file = "../code/regex-functions.R")
+```
+
+```{r}
+vec = split_chars('Go Bears!')
+vec
+split_chars('Expecto Patronum')
+num_vowels(vec)
+
+count_vowels("The quick brown fox jumps over the lazy dog")
+count_vowels("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG")
+
+reverse_chars("gattaca")
+reverse_chars("Lumox Maxima")
+
+reverse_words("sentence! this reverse")
+reverse_words("string")
+```
+
+
+##3) Data “Emotion in Text”
+```{r}
+emotion = read.csv(file = "../data/text-emotion.csv", stringsAsFactors = FALSE)
+content = emotion$content
+str(content)
+```
+
+###3.1) Number of characters per tweet
+```{r}
+char_num = lapply(content, nchar)
+char_num = unlist(char_num)
+summary(char_num)
+hist(char_num, main = "Histogram of the characters in each content", xlab = "number of characters", breaks = seq(from = 1, to = 175, by = 5))
+```
+
+###3.2) Number of Mentions
+```{r}
+# Count the number of @ mentions (i.e. mention to another user) in the tweet contents.
+count_at = str_count(content, pattern = '@\\w+')
+
+# Display such frequencies, and make a barplot of these counts (i.e. number of tweets
+# with 0 mentions, with 1 mention, with 2 mentions, etc).
+table_at = as.data.frame(table(count_at))
+table_at
+barplot(table_at$Freq)
+
+#Also write code to display the content of the tweet with 10 mentions.
+index = which.max(count_at)
+content[index]
+
+```
+
+
+###3.3) Hashtags
+```{r}
+count_hash = str_count(content, pattern = '#[[:alpha:]][[:alnum:]]*')
+table_hash = as.data.frame(table(count_hash))
+table_hash
+barplot(table_hash$Freq)
+
+```
+
+```{r}
+all_hash<- unlist(str_extract_all(content, patter = "#[[:alpha:]][[:alnum:]]*"))
+ave_hash = mean(nchar(all_hash)) - 1
+ave_hash
+```
+
+```{r}
+hash_length = nchar(all_hash) - 1
+hash_freq = table(hash_length)
+hash_freq
+max_hash = max(hash_freq)
+print("The mode of the length of the hashtags are 4 and 9, where there are 97 for each 4 and 9")
+
+```
+
