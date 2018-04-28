@@ -1,0 +1,147 @@
+---
+title: "hw05"
+author: "Shi Fan Jin"
+date: "4/27/2018"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(dieroller)
+```
+
+### how to use my package: "dieroller"
+```{r}
+#default die
+fair_die <- die() 
+fair_die
+
+#die with non-standard sides
+weird_die <- die(sides = c('i', 'ii', 'iii', 'iv', 'v', 'vi')) 
+weird_die
+
+#create a loaded die
+loaded_die <- die(prob = c(0.075, 0.1, 0.125, 0.15, 0.20, 0.35)) 
+loaded_die
+
+#bad sides
+#bad_die <- die(sides = c('a', 'b', 'c', 'd', 'e'))
+
+#bad prob
+#bad_die <- die(sides = c('a', 'b', 'c', 'd', 'e', 'f'), prob = c(0.2, 0.1, 0.1, 0.1, 0.5, 0.1))
+#bad_die
+
+
+
+# roll fair die 50 times
+fair_die <- die() 
+set.seed(123)
+fair50 <- roll(fair_die, times = 50) 
+
+fair50
+names(fair50)
+fair50$rolls
+fair50$sides
+fair50$prob
+fair50$total
+
+#string die
+str_die <- die(sides = c('a', 'b', 'c', 'd', 'e', 'f'), prob = c(0.075, 0.1, 0.125, 0.15, 0.20, 0.35))
+#roll 20 times
+set.seed(123)
+str_rolls <- roll(str_die, times = 20) 
+names(str_rolls)
+str_rolls
+
+#for summary
+fair50_sum <- summary(fair50)
+fair50_sum
+class(fair50_sum)
+names(fair50_sum)
+fair50_sum$freqs
+
+#plot method
+plot(fair50)
+
+
+
+#EXAMPLES
+# roll fair die
+set.seed(123)
+fair_die <- die()
+fair500 <- roll(fair_die, times = 500)
+
+# summary method
+summary(fair500)
+
+# extracting roll in position 500
+fair500[500]
+
+# replacing last roll
+fair500[500] <- 1
+fair500[500]
+
+summary(fair500)
+
+# adding 100 rolls
+fair600 <- fair500 + 100 
+summary(fair600)
+
+# plot method
+plot(fair500, 500)
+```
+
+###De Mere's Problem
+####Problem 1.
+The first problem involves computing the probability of getting at least one “6” in four rolls of a die in a series of 1000 games
+```{r}
+roll4 <- c()
+count1 <- 0
+
+for (i in 1:1000) {
+  roll4 <- roll(die(), 4)
+  if (roll4[1] == 6 | roll4[2] == 6 | roll4[3] == 6 | roll4[4] == 6) {
+    count1 = count1 + 1
+  }
+}
+
+cat("The number of games in which there is at least one 6 =", count1, "games")
+cat("\nRelative frequency of at least getting one 6 =", count1/1000)
+
+```
+
+####Problem 2.
+The other problem involves computing the probability of getting at least two “6” in 24 rolls of a pair of dice
+```{r}
+
+roll1 <- c()
+roll2 <- c()
+double6 <- c()
+count2 <- 0
+
+for (j in 1:1000) {
+  roll1 <- roll(die(), 24)
+  roll2 <- roll(die(), 24)
+  for (k in 1:24) {
+    if (roll1[k] == 6 && roll2[k] == 6) {
+      double6[k] <- TRUE
+    } else {
+      double6[k] <- FALSE
+    }
+  }
+  if (TRUE%in%double6 == TRUE) {
+    count2 = count2 + 1
+  } else {
+    count2 = count2
+  }
+}
+
+cat("The number of games in which there is at least one double 6 =", count2, "games")
+cat("\nRelative frequency of at least getting one double 6 =", count2/1000)
+
+```
+
